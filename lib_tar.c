@@ -42,6 +42,17 @@ int check_archive(int tar_fd) {
 
 
         //checking if the header is valide
+        if (header.magic != TMAGIC)
+        {
+            return -1;
+        }
+        if (header.version != TVERSION)
+        {
+            return -2;
+        }
+        
+        
+        
 
         
         if (TAR_INT(header.size)%BLOCKSIZE == 0){ //if all blocks are full then offset by the number of 512 byte wich make the file
@@ -54,9 +65,7 @@ int check_archive(int tar_fd) {
         
         nb_headers += 1;
         //x+=1;
-    }
-
-    
+    }    
     return nb_headers;
 }
 
@@ -70,7 +79,33 @@ int check_archive(int tar_fd) {
  *         any other value otherwise.
  */
 int exists(int tar_fd, char *path) {
-    return 0;
+    int nb_headers = 0;
+    int nb_block = 0;
+    while (1) 
+    {
+        //use of pread because you can offset the copy
+        tar_header_t header;
+        pread(tar_fd, &header, sizeof(tar_header_t), nb_block*sizeof(tar_header_t));
+                
+        if (!strcmp(header.name, "\0")){
+            return nb_headers;
+        }
+
+        printf("Name: %s\n", header.name);
+
+
+        
+        if (TAR_INT(header.size)%BLOCKSIZE == 0){ //if all blocks are full then offset by the number of 512 byte wich make the file
+            nb_block += (1 + TAR_INT(header.size)/BLOCKSIZE);
+        }else{ //if the blocks are not full
+            nb_block += (2 + TAR_INT(header.size)/BLOCKSIZE); 
+        }
+        
+        printf("nb_block: %d\n", nb_block);
+        
+        nb_headers += 1;
+    }    
+    return nb_headers;
 }
 
 /**
