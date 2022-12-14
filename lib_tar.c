@@ -43,11 +43,7 @@ int check_archive(int tar_fd) {
         printf("Version: %d\n", strcmp(header.version,(char *) TVERSION));
 
         //checking if the header is valide
-<<<<<<< HEAD
         if (strcmp(header.magic,(char *) TMAGIC)) //strcmp return 0 if str1 and str2 are equal
-=======
-        /* if (header.magic != (char *) TMAGIC) //Fonctionne pas... return toujours -1
->>>>>>> 44a98da1f7343830911c17abb4f4f10a3e3b8113
         {
             return -1;
         }
@@ -71,10 +67,6 @@ int check_archive(int tar_fd) {
             return -3;
         }
         
-<<<<<<< HEAD
-=======
-        */
->>>>>>> 44a98da1f7343830911c17abb4f4f10a3e3b8113
         
 
         
