@@ -6,6 +6,9 @@ lib_tar.o: lib_tar.c lib_tar.h
 
 tests: tests.c lib_tar.o
 
+test: test.c
+	gcc test.c -o test
+
 clean:
 	rm -f lib_tar.o tests soumission.tar
 

@@ -1,4 +1,8 @@
 #include "lib_tar.h"
+#include <string.h>
+#include <stdio.h>
+
+#define BLOCKSIZE 512
 
 /**
  * Checks whether the archive is valid.
@@ -16,7 +20,44 @@
  *         -3 if the archive contains a header with an invalid checksum value
  */
 int check_archive(int tar_fd) {
-    return 0;
+    int nb_headers = 0;
+    int nb_block = 0;
+    //int x = 1;
+    //int start = tar_fd;
+    
+    //tar_header_t header;
+    //pread(tar_fd, &header, sizeof(tar_header_t), nb_block*sizeof(tar_header_t));
+
+    while (1) //while(1)
+    {
+        //use of pread because you can offset the copy
+        tar_header_t header;
+        pread(tar_fd, &header, sizeof(tar_header_t), nb_block*sizeof(tar_header_t));
+                
+        if (!strcmp(header.name, "\0")){
+            return nb_headers;
+        }
+
+        printf("Name: %s\n", header.name);
+
+
+        //checking if the header is valide
+
+        
+        if (TAR_INT(header.size)%BLOCKSIZE == 0){ //if all blocks are full then offset by the number of 512 byte wich make the file
+            nb_block += (1 + TAR_INT(header.size)/BLOCKSIZE);
+        }else{ //if the blocks are not full
+            nb_block += (2 + TAR_INT(header.size)/BLOCKSIZE); 
+        }
+        
+        printf("nb_block: %d\n", nb_block);
+        
+        nb_headers += 1;
+        //x+=1;
+    }
+
+    
+    return nb_headers;
 }
 
 /**
@@ -118,3 +159,4 @@ int list(int tar_fd, char *path, char **entries, size_t *no_entries) {
 ssize_t read_file(int tar_fd, char *path, size_t offset, uint8_t *dest, size_t *len) {
     return 0;
 }
+
