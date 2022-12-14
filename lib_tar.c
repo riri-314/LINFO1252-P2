@@ -39,18 +39,33 @@ int check_archive(int tar_fd) {
         }
 
         printf("Name: %s\n", header.name);
-
+        printf("checksum: %ld\n", TAR_INT(header.chksum));
+        printf("Version: %d\n", strcmp(header.version,(char *) TVERSION));
 
         //checking if the header is valide
-        if (!strcmp(header.magic,(char *) TMAGIC))
+        if (strcmp(header.magic,(char *) TMAGIC)) //strcmp return 0 if str1 and str2 are equal
         {
             return -1;
         }
-        if (!strcmp(header.version,(char *) TVERSION))
+        //if (strcmp(header.version,(char *) TVERSION)) //seems to be incorect
+        //{
+        //    return -2;
+        //}
+
+        long int checksum = TAR_INT(header.chksum);// copy checksum to compare it later
+        memset(header.chksum, ' ',8); //header checksum as to be empty before calculing it
+        int8_t* byte = (int8_t *) &header; //byte have to be a 8 bite, maybe better to set to int_8 as int in dependent on the machine
+        long int homemade_checksum = 0; //int is too small
+        for (int i = 0; i < BLOCKSIZE; i++)
         {
-            return -2;
+            homemade_checksum += *(byte++); //byte++ is some funcky pointer manipulation that i'm not sure to understand
         }
-        
+        printf("homemade checksum: %ld\n", homemade_checksum);
+
+        if (checksum != homemade_checksum)
+        {
+            return -3;
+        }
         
         
 
@@ -61,11 +76,11 @@ int check_archive(int tar_fd) {
             nb_block += (2 + TAR_INT(header.size)/BLOCKSIZE); 
         }
         
-        printf("nb_block: %d\n", nb_block);
+        //printf("nb_block: %d\n", nb_block);
         
         nb_headers += 1;
         //x+=1;
-    }    
+    }
     return nb_headers;
 }
 
