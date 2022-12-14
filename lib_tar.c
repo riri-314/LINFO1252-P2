@@ -94,13 +94,7 @@ int check_archive(int tar_fd) {
  *         any other value otherwise.
  */
 int exists(int tar_fd, char *path) {
-    int nb_headers = 0;
     int nb_block = 0;
-    //int x = 1;
-    //int start = tar_fd;
-    
-    //tar_header_t header;
-    //pread(tar_fd, &header, sizeof(tar_header_t), nb_block*sizeof(tar_header_t));
 
     while (1) //while(1)
     {
@@ -109,7 +103,7 @@ int exists(int tar_fd, char *path) {
         pread(tar_fd, &header, sizeof(tar_header_t), nb_block*sizeof(tar_header_t));
                 
         if (!strcmp(header.name, "\0")){
-            return nb_headers;
+            return 0;
         }
 
         printf("Name: %s\n", header.name);
@@ -122,11 +116,6 @@ int exists(int tar_fd, char *path) {
         }else{ //if the blocks are not full
             nb_block += (2 + TAR_INT(header.size)/BLOCKSIZE); 
         }
-        
-        printf("nb_block: %d\n", nb_block);
-        
-        nb_headers += 1;
-        //x+=1;
     } 
     return 0;
 }
