@@ -43,7 +43,11 @@ int check_archive(int tar_fd) {
         printf("Version: %d\n", strcmp(header.version,(char *) TVERSION));
 
         //checking if the header is valide
+<<<<<<< HEAD
         if (strcmp(header.magic,(char *) TMAGIC)) //strcmp return 0 if str1 and str2 are equal
+=======
+        /* if (header.magic != (char *) TMAGIC) //Fonctionne pas... return toujours -1
+>>>>>>> 44a98da1f7343830911c17abb4f4f10a3e3b8113
         {
             return -1;
         }
@@ -67,6 +71,10 @@ int check_archive(int tar_fd) {
             return -3;
         }
         
+<<<<<<< HEAD
+=======
+        */
+>>>>>>> 44a98da1f7343830911c17abb4f4f10a3e3b8113
         
 
         
@@ -141,6 +149,46 @@ int exists(int tar_fd, char *path) {
  *         any other value otherwise.
  */
 int is_dir(int tar_fd, char *path) {
+    //Typeflag = 5
+    int nb_headers = 0;
+    int nb_block = 0;
+    //int x = 1;
+    //int start = tar_fd;
+    
+    //tar_header_t header;
+    //pread(tar_fd, &header, sizeof(tar_header_t), nb_block*sizeof(tar_header_t));
+
+    while (1) //while(1)
+    {
+        //use of pread because you can offset the copy
+        tar_header_t header;
+        pread(tar_fd, &header, sizeof(tar_header_t), nb_block*sizeof(tar_header_t));
+                
+        if (!strcmp(header.name, "\0")){
+            return nb_headers;
+        }
+
+        printf("Name: %s\n", header.name);
+        if (strcmp(header.name, path))
+        {
+            if (header.typeflag == 5)
+            {
+                return 1;
+            }
+            return 0;
+    
+        }    
+        if (TAR_INT(header.size)%BLOCKSIZE == 0){ //if all blocks are full then offset by the number of 512 byte wich make the file
+            nb_block += (1 + TAR_INT(header.size)/BLOCKSIZE);
+        }else{ //if the blocks are not full
+            nb_block += (2 + TAR_INT(header.size)/BLOCKSIZE); 
+        }
+        
+        printf("nb_block: %d\n", nb_block);
+        
+        nb_headers += 1;
+        //x+=1;
+    } 
     return 0;
 }
 
@@ -154,6 +202,46 @@ int is_dir(int tar_fd, char *path) {
  *         any other value otherwise.
  */
 int is_file(int tar_fd, char *path) {
+    //Typeflag = 0
+    int nb_headers = 0;
+    int nb_block = 0;
+    //int x = 1;
+    //int start = tar_fd;
+    
+    //tar_header_t header;
+    //pread(tar_fd, &header, sizeof(tar_header_t), nb_block*sizeof(tar_header_t));
+
+    while (1) //while(1)
+    {
+        //use of pread because you can offset the copy
+        tar_header_t header;
+        pread(tar_fd, &header, sizeof(tar_header_t), nb_block*sizeof(tar_header_t));
+                
+        if (!strcmp(header.name, "\0")){
+            return nb_headers;
+        }
+
+        printf("Name: %s\n", header.name);
+        if (strcmp(header.name, path)) //Je sais pas si ça marche atm
+        {
+            if (header.typeflag == 0)
+            {
+                return 1;
+            }
+            return 0;
+    
+        }    
+        if (TAR_INT(header.size)%BLOCKSIZE == 0){ //if all blocks are full then offset by the number of 512 byte wich make the file
+            nb_block += (1 + TAR_INT(header.size)/BLOCKSIZE);
+        }else{ //if the blocks are not full
+            nb_block += (2 + TAR_INT(header.size)/BLOCKSIZE); 
+        }
+        
+        printf("nb_block: %d\n", nb_block);
+        
+        nb_headers += 1;
+        //x+=1;
+    } 
     return 0;
 }
 
