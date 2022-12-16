@@ -10,22 +10,26 @@
 ## Status
 
 ### Check_archive
-TODO: bug in check version 
+- [x] working
 
 ### Exists
-TODO: Test it
+- [x] working
 
 ### Is_dir
-TODO: Test it
+- [x] working
 
 ### Is_file
-TODO: Test it
+- [x] working
 
 ### Is_symlink
-TODO
+TODO: 
+- [ ] solve bug
+- [ ] test it
 
 ### Is_list
-TODO
+TODO:
+- [ ] solve bug
+- [ ] test it
 
 ### Read_file
 TODO
