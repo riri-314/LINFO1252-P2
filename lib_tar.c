@@ -39,18 +39,18 @@ int check_archive(int tar_tar_fd) {
         }
 
         printf("Name: %s\n", header.name);
-        printf("checksum: %ld\n", TAR_INT(header.chksum));
-        printf("Version: %d\n", strcmp(header.version,(char *) TVERSION));
+        //printf("checksum: %ld\n", TAR_INT(header.chksum));
+        //printf("Version: %d\n", strcmp(header.version,(char *) TVERSION));
 
         //checking if the header is valide
         if (strcmp(header.magic,(char *) TMAGIC)) //strcmp return 0 if str1 and str2 are equal
         {
             return -1;
         }
-        //if (strcmp(header.version,(char *) TVERSION)) //seems to be incorect
-        //{
-        //    return -2;
-        //}
+        if (strcmp(header.version,TVERSION) == 0) //seems to be incorect
+        {
+            return -2;
+        }
 
         long int checksum = TAR_INT(header.chksum);// copy checksum to compare it later
         memset(header.chksum, ' ',8); //header checksum as to be empty before calculing it
@@ -60,7 +60,7 @@ int check_archive(int tar_tar_fd) {
         {
             homemade_checksum += *(byte++); //byte++ is some funcky pointer manipulation that i'm not sure to understand
         }
-        printf("homemade checksum: %ld\n", homemade_checksum);
+        //printf("homemade checksum: %ld\n", homemade_checksum);
 
         if (checksum != homemade_checksum)
         {
@@ -95,25 +95,19 @@ int check_archive(int tar_tar_fd) {
  */
 int exists(int tar_tar_fd, char *path) {
     int nb_block = 0;
-    lseek(tar_tar_fd,0,SEEK_SET);
-    char header_test[BLOCKSIZE];
+    //lseek(tar_tar_fd,0,SEEK_SET);
+    //char header_test[BLOCKSIZE];
     while (1)
     {
-        //use of pread because you can offset the copy
-        /*int bytes_read = read(tar_tar_fd, header, BLOCKSIZE);
-        if (bytes_read < BLOCKSIZE){
-            break
-        }
-        */
         tar_header_t header;
         pread(tar_tar_fd, &header, sizeof(tar_header_t), nb_block*sizeof(tar_header_t));
                 
-        if (!strcmp(header.name, "\0")){
+        if (!strcmp(header.name, "\0")){ //check if it is the last header in the archive, EOF
             return 0;
         }
 
-        printf("Name: %s\n", header.name);
-        if (strcmp(header_test, path) == 0)
+        //printf("Name exists: %s\n", header.name); //check if the entry correspond to the header, if so [return 1] Succes, else try with the next header until EOF
+        if (strcmp(header.name, path) == 0)
         {
             return 1;
         }    
@@ -138,29 +132,27 @@ int exists(int tar_tar_fd, char *path) {
  */
 int is_dir(int tar_tar_fd, char *path) {
     int nb_block = 0;
-    if (exists(tar_tar_fd,path) == 0)
-    {
-        return 0;
-    }
+    //if (exists(tar_tar_fd,path) == 0)
+    //{
+    //    return 0;
+    //}
     while (1)
     {
         tar_header_t header;
         pread(tar_tar_fd, &header, sizeof(tar_header_t), nb_block*sizeof(tar_header_t));
                 
         if (!strcmp(header.name, "\0")){
-            return 0;
+            return 0; //is not dir or entry does not exist, EOF
         }
 
-        printf("Name: %s\n", header.name);
-        char header_test[BLOCKSIZE];
         // Check the type flag in the tar header
-        if (header_test[156] == '4') {
-        // Entry is a directory
-            return 1;
-        } else
+        //printf("is_dir typeflag; %d\n",header.typeflag);
+        if ((strcmp(header.name, path) == 0) && header.typeflag == DIRTYPE) //check if exist and if the type flag is also correct
         {
-            return 0;
-        } 
+            return 1; //succes
+        }
+                
+
         if (TAR_INT(header.size)%BLOCKSIZE == 0){ //if all blocks are full then offset by the number of 512 byte wich make the file
             nb_block += (1 + TAR_INT(header.size)/BLOCKSIZE);
         }else{ //if the blocks are not full
@@ -184,10 +176,6 @@ int is_dir(int tar_tar_fd, char *path) {
  */
 int is_file(int tar_tar_fd, char *path) {
     int nb_block = 0;
-    if (exists(tar_tar_fd,path) == 0)
-    {
-        return 0;
-    }
     while (1)
     {
         tar_header_t header;
@@ -197,15 +185,13 @@ int is_file(int tar_tar_fd, char *path) {
             return 0;
         }
 
-        printf("Name: %s\n", header.name);
-        char header_test[BLOCKSIZE];
+        //printf("Name: %s\n", header.name);
+        //char header_test[BLOCKSIZE];
         // Check the type flag in the tar header
-        if (header_test[156] == '0' || header_test[156] == '\0') {
+        if ((header.typeflag == REGTYPE || header.typeflag == AREGTYPE) && strcmp(header.name, path) == 0) { //checking if REGTYPE and AREGTYPE are correct and that entry exist
             return 1;
-        }else
-        {
-            return 0;
-        } 
+        }
+
         if (TAR_INT(header.size)%BLOCKSIZE == 0){ //if all blocks are full then offset by the number of 512 byte wich make the file
             nb_block += (1 + TAR_INT(header.size)/BLOCKSIZE);
         }else{ //if the blocks are not full
@@ -240,15 +226,13 @@ int is_symlink(int tar_tar_fd, char *path) {
             return 0;
         }
 
-        printf("Name: %s\n", header.name);
-        char header_test[BLOCKSIZE];
+        //printf("Name: %s\n", header.name);
+        //char header_test[BLOCKSIZE];
         // Check the type flag in the tar header
-        if (header_test[156] == '2') {
+        if (header.typeflag == SYMTYPE && (strcmp(header.name, path) == 0)) {
             return 1;
-        }else
-        {
-            return 0;
-        } 
+        }
+        
         if (TAR_INT(header.size)%BLOCKSIZE == 0){ //if all blocks are full then offset by the number of 512 byte wich make the file
             nb_block += (1 + TAR_INT(header.size)/BLOCKSIZE);
         }else{ //if the blocks are not full

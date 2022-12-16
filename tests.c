@@ -36,20 +36,25 @@ int main(int argc, char **argv) {
         return -1;
     }
 
-    int ret = check_archive(fd);
-    printf("check_archive returned %d\n", ret);
+    int ret0 = check_archive(fd); // should worki
+    printf("check_archive returned %d\n", ret0);
 
-    /* int ret1 = exists(fd,"archive.tar");
+    int ret1 = exists(fd,"folder1/file1.txt"); // should worki
     printf("exists returned %d\n", ret1);
 
-    int ret2 = is_dir(fd,"archive.tar");
-    printf("Directory returned %d\n", ret2);
+    int ret2 = is_dir(fd,"folder1/folder3/"); // should worki
+    printf("Directory returned %d\n", ret2); 
     
-    int ret3 = is_file(fd,"archive.tar");
+    int ret3 = is_file(fd,"folder1/file1.txt"); // should worki
     printf("File returned %d\n", ret3);
 
-    int ret4 = is_symlink(fd,"archive.tar");
-    printf("exists returned %d\n", ret4);
-    */
+    int ret4 = is_file(fd, "folder1/"); // should not work
+    printf("File returned %d\n", ret4);
+
+
+
+    //int ret4 = is_symlink(fd,"archive.tar");
+    //printf("exists returned %d\n", ret4);
+
     return 0;
 }
