@@ -319,7 +319,24 @@ int list(int tar_fd, char *path, char **entries, size_t *no_entries) {
  *         the end of the file.
  *
  */
-ssize_t read_file(int tar_fd, char *path, size_t offset, uint8_t *dest, size_t *len) {
-    return 0;
+ssize_t read_file(int tar_fd, char *path, size_t offset, uint8_t *dest, size_t *len) { //Essaie avec l'IA
+    // Move the file pointer to the specified offset.
+    if (lseek(tar_fd, offset, SEEK_SET) < 0) {
+        perror("lseek");
+        return -2;
+    }
+
+    // Read the data from the file into the destination buffer.
+    ssize_t bytes_read = read(tar_fd, dest, *len);
+    if (bytes_read < 0) {
+        perror("read");
+        return -1;
+    }
+
+    // Update the length with the number of bytes actually read.
+    *len = bytes_read;
+
+    // Return the number of bytes remaining to be read.
+    return *len < *len ? *len : 0;
 }
 
