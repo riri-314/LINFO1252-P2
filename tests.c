@@ -54,7 +54,7 @@ int main(int argc, char **argv) {
 
 
     //int ret4 = is_symlink(fd,"archive.tar");
-    //printf("exists returned %d\n", ret4);
+    //printf("Symlink returned %d\n", ret4);
 
     return 0;
 }
