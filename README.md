@@ -23,8 +23,8 @@
 
 ### Is_symlink
 TODO: 
-- [ ] solve bug
-- [ ] test it
+- [x] solve bug
+- [x] test it
 
 ### Is_list
 TODO:
