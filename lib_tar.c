@@ -229,7 +229,7 @@ int is_symlink(int tar_tar_fd, char *path) {
         //printf("Name: %s\n", header.name);
         //char header_test[BLOCKSIZE];
         // Check the type flag in the tar header
-        if (header.typeflag == SYMTYPE && (strcmp(header.name, path) == 0)) {
+        if ((header.typeflag == LNKTYPE || header.typeflag == SYMTYPE) && (strcmp(header.name, path) == 0)) {
             return 1;
         }
         
@@ -337,6 +337,6 @@ ssize_t read_file(int tar_fd, char *path, size_t offset, uint8_t *dest, size_t *
     *len = bytes_read;
 
     // Return the number of bytes remaining to be read.
-    return *len < *len ? *len : 0;
+    return 0;
 }
 

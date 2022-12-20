@@ -51,6 +51,12 @@ int main(int argc, char **argv) {
     int ret4 = is_file(fd, "folder1/"); // should not work
     printf("File returned %d\n", ret4);
 
+    int ret5 = is_symlink(fd, "symlink"); //should work lol
+    printf("Symlink returned %d\n", ret5);
+
+    int ret6 = is_symlink(fd, "folder1/");
+    printf("Symlink return %d\n", ret6);
+
 
 
     //int ret4 = is_symlink(fd,"archive.tar");
