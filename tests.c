@@ -54,8 +54,11 @@ int main(int argc, char **argv) {
     int ret5 = is_symlink(fd, "symlink"); //should work lol
     printf("Symlink returned %d\n", ret5);
 
-    int ret6 = read_file(fd,"folder1/file.txt",0,"folder1/",10); 
-    printf("Read_file returned %d\n", ret6);
+    //uint8_t buffer[100];
+    //size_t len  = 43;
+    //int ret6 = read_file(fd,"folder1/file1.txt",0,buffer, &len); 
+    //printf("Read_file returned %d\n", ret6);
+    //printf("%s\n", (char *) buffer);
     
 
 

@@ -301,23 +301,38 @@ ssize_t read_file(int tar_fd, char *path, size_t offset, uint8_t *dest, size_t *
     while(1){
         
         tar_header_t header;
-        pread(tar_fd, &header, sizeof(tar_header_t), nb_block*sizeof(tar_header_t));
+        pread(tar_fd, &header, sizeof(tar_header_t), nb_block*sizeof(tar_header_t));// navigate through headers
 
         //test if symlink
-        if ((header.typeflag == LNKTYPE || header.typeflag == SYMTYPE) && (strcmp(header.name, path) == 0)) {
-            return read_file(tar_fd, header.linkname, offset, dest, len); //if symlink, run read_file with the correct file path
-        }
-
 
         if (strcmp(header.name, path) == 0){ //if we find the file given by path and is not symlink
             
-            if (pread(tar_fd,&header, sizeof(tar_header_t),offset) != 0) { //maybe not so good
-            perror("Error setting position indicator");
-            return -2;
+            if ((header.typeflag == LNKTYPE || header.typeflag == SYMTYPE) && (strcmp(header.name, path) == 0)) {
+                return read_file(tar_fd, header.linkname, offset, dest, len); //if symlink, run read_file with the correct file path
             }
+            
+            
+            if (TAR_INT(header.size) < offset){
+                return -2;
+            }
+            int byte_2_read = TAR_INT(header.size) - offset;
+            *len = (size_t) byte_2_read; //in out argument, DAMN IT
+            // byte_2_read is bigger than len, return byte_2_read-len
+            // byte_2read is smaller or equal to len, return 0
+            if (byte_2_read > *len)
+            {
+                //read to buffer
+                pread(tar_fd, dest, *len, offset + ((nb_block+1)*sizeof(tar_header_t))); 
+                return byte_2_read - *len;
+            }else if (byte_2_read <= *len)
+            {
+                //read to buffer
+                pread(tar_fd, dest, *len, offset + ((nb_block+1)*sizeof(tar_header_t))); 
+                return 0;
+            }            
         }
                 
-    
+
         if (!strcmp(header.name, "\0")){ //test if we are at the end of the archive
             return 0;
         }
