@@ -269,37 +269,7 @@ int is_symlink(int tar_fd, char *path) {
  *         any other value otherwise.
  */
 int list(int tar_fd, char *path, char **entries, size_t *no_entries) {
-    // Move the file pointer to the beginning of the tar archive
-  lseek(tar_fd, 0, SEEK_SET);
-
-  size_t i = 0;
-  char header_test[BLOCKSIZE];
-  while (1) {
-    // Read the tar header for the current entry
-    int bytes_read = read(tar_fd, header_test, BLOCKSIZE);
-    if (bytes_read < BLOCKSIZE) {
-      // End of the tar archive reached
-      break;
-    }
-
-    // Check if the name of the current entry starts with the given path
-    if (strncmp(header_test, path, strlen(path)) == 0) {
-      // Add the entry to the list
-      entries[i] = strdup(header_test);
-      i++;
-      if (i >= *no_entries) {
-        // Limit reached
-        break;
-      }
-    }
-
-    // Move the file pointer to the next entry in the tar archive
-    off_t offset = strtol(header_test + 124, NULL, 8);
-    offset = (offset / BLOCKSIZE + (offset % BLOCKSIZE != 0)) * BLOCKSIZE;
-    lseek(tar_fd, offset, SEEK_CUR);
-  }
-
-  return i;
+  return 0;
 }
 
 /**
@@ -321,22 +291,29 @@ int list(int tar_fd, char *path, char **entries, size_t *no_entries) {
  *
  */
 ssize_t read_file(int tar_fd, char *path, size_t offset, uint8_t *dest, size_t *len) { //AI is crap
+    
     int nb_block = 0;
+    //should check the link
+    if(is_file(tar_fd, path) == 0){
+        return -1;
+    }
+
     while(1){
         
         tar_header_t header;
         pread(tar_fd, &header, sizeof(tar_header_t), nb_block*sizeof(tar_header_t));
 
+        //test if symlink
+        if ((header.typeflag == LNKTYPE || header.typeflag == SYMTYPE) && (strcmp(header.name, path) == 0)) {
+            return read_file(tar_fd, header.linkname, offset, dest, len); //if symlink, run read_file with the correct file path
+        }
 
-        if (strcmp(header.name, path) == 0){ //if we find the file given by path
+
+        if (strcmp(header.name, path) == 0){ //if we find the file given by path and is not symlink
             
-            if (pread(tar_fd,&header, sizeof(tar_header_t),offset) != 0) {
+            if (pread(tar_fd,&header, sizeof(tar_header_t),offset) != 0) { //maybe not so good
             perror("Error setting position indicator");
             return -2;
-            }
-            
-            if(is_file(tar_fd, path) == 0){
-                    return -1;
             }
         }
                 
