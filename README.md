@@ -32,8 +32,8 @@ TODO:
 - [ ] test it
 
 ### Read_file
-TODO
-
+- [x] solve bug
+- [ ] making it work on inginious, f**k them i'm ban
 ## Autors
 Made by Henri Pihet and Xavier Sanchez-Rivas as part of the computer system course given by professor Etienne Riviere at EPL, UCLouvain
 
