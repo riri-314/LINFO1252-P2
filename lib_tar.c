@@ -330,8 +330,7 @@ ssize_t read_file(int tar_fd, char *path, size_t offset, uint8_t *dest, size_t *
         }
         if(is_file(tar_fd, path) == 0){
                 return -1;
-        }
-        
+        }  
         
     }
     return 0;
