@@ -326,11 +326,22 @@ ssize_t read_file(int tar_fd, char *path, size_t offset, uint8_t *dest, size_t *
         
         tar_header_t header;
         pread(tar_fd, &header, sizeof(tar_header_t), nb_block*sizeof(tar_header_t));
+
+
+        if (strcmp(header.name, path) == 0){ //if we find the file given by path
+            
+            if (pread(tar_fd,&header, sizeof(tar_header_t),offset) != 0) {
+            perror("Error setting position indicator");
+            return -2;
+            }
+            
+            if(is_file(tar_fd, path) == 0){
+                    return -1;
+            }
+        }
                 
-        
-        
-        
-        if (!strcmp(header.name, "\0")){
+    
+        if (!strcmp(header.name, "\0")){ //test if we are at the end of the archive
             return 0;
         }
 
