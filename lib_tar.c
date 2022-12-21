@@ -269,7 +269,29 @@ int is_symlink(int tar_fd, char *path) {
  *         any other value otherwise.
  */
 int list(int tar_fd, char *path, char **entries, size_t *no_entries) {
-  return 0;
+    int nb_block = 0;
+
+    while(1){
+        
+        tar_header_t header;
+        pread(tar_fd, &header, sizeof(tar_header_t), nb_block*sizeof(tar_header_t));// navigate through headers
+        
+        if (!strcmp(header.name, "\0")){ //test if we are at the end of the archive
+            return 0;
+        }
+        
+        if (strcmp(header.name, path) == 0){
+            //code here
+        }
+
+        if (TAR_INT(header.size)%BLOCKSIZE == 0){ //if all blocks are full then offset by the number of 512 byte wich make the file
+            nb_block += (1 + TAR_INT(header.size)/BLOCKSIZE);
+        }else{ //if the blocks are not full
+            nb_block += (2 + TAR_INT(header.size)/BLOCKSIZE); 
+        }
+                
+    }
+    return 0;
 }
 
 /**
@@ -293,6 +315,8 @@ int list(int tar_fd, char *path, char **entries, size_t *no_entries) {
 ssize_t read_file(int tar_fd, char *path, size_t offset, uint8_t *dest, size_t *len) { //AI is crap
     
     int nb_block = 0;
+    int byte_2_read = 0;
+
     //should check the link
     if(is_file(tar_fd, path) == 0){
         return -1;
@@ -315,18 +339,24 @@ ssize_t read_file(int tar_fd, char *path, size_t offset, uint8_t *dest, size_t *
             if (TAR_INT(header.size) < offset){
                 return -2;
             }
-            int byte_2_read = TAR_INT(header.size) - offset;
-            *len = (size_t) byte_2_read; //in out argument, DAMN IT
+            byte_2_read = TAR_INT(header.size) - offset;
+            printf("byte_2_read: %d\n", byte_2_read);
+            printf("len before: %ld\n", *len);
+            //printf("tar header size: %ld\n", TAR_INT(header.size));
+            //printf("tar header name: %s\n", header.name);
             // byte_2_read is bigger than len, return byte_2_read-len
             // byte_2read is smaller or equal to len, return 0
             if (byte_2_read > *len)
             {
                 //read to buffer
+                
                 pread(tar_fd, dest, *len, offset + ((nb_block+1)*sizeof(tar_header_t))); 
                 return byte_2_read - *len;
             }else if (byte_2_read <= *len)
             {
                 //read to buffer
+                *len = (size_t) byte_2_read; //in out argument, DAMN IT
+                printf("len after: %ld\n", *len);
                 pread(tar_fd, dest, *len, offset + ((nb_block+1)*sizeof(tar_header_t))); 
                 return 0;
             }            
