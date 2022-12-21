@@ -1,7 +1,7 @@
 #include "lib_tar.h"
 #include <string.h>
 #include <stdio.h>
-#
+
 
 #define BLOCKSIZE 512
 
@@ -321,27 +321,19 @@ int list(int tar_fd, char *path, char **entries, size_t *no_entries) {
  *
  */
 ssize_t read_file(int tar_fd, char *path, size_t offset, uint8_t *dest, size_t *len) { //Essaie avec l'IA
-    lseek(tar_fd, 0, SEEK_SET);
-    size_t i = 0;
-    char header_test[BLOCKSIZE];
     while (1) {
-        archive_read_new();
         tar_header_t header;
-        if(is_file(tar_fd, *path) == 0){
+        
+        if (pread(tar_fd,&header, sizeof(tar_header_t),offset) != 0) {
+            perror("Error setting position indicator");
+            return -2;
+        }
+        if(is_file(tar_fd, path) == 0){
                 return -1;
         }
-        if (fseek(tar_fd, offset, SEEK_SET) != 0) {
-            perror("Error setting position indicator");
-            fclose(tar_fd);
-            return -2;
-    }
+        
         
     }
-
-    // Move the file pointer to the next entry in the tar archive
-    off_t offset = strtol(header_test + 124, NULL, 8);
-    offset = (offset / BLOCKSIZE + (offset % BLOCKSIZE != 0)) * BLOCKSIZE;
-    lseek(tar_fd, offset, SEEK_CUR);
     return 0;
 }
 

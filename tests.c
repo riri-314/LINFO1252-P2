@@ -54,6 +54,8 @@ int main(int argc, char **argv) {
     int ret5 = is_symlink(fd, "symlink"); //should work lol
     printf("Symlink returned %d\n", ret5);
 
+    int ret6 = read_file(fd,"folder1/folder3/",0,0,0); //should work lol
+    printf("Read_file returned %d\n", ret6);
     
 
 
