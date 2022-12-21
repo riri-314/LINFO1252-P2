@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdio.h>
 
+
 #define BLOCKSIZE 512
 
 /**
@@ -12,27 +13,27 @@
  *  - a version value of "00" and no null,
  *  - a correct checksum
  *
- * @param tar_tar_fd A file descriptor pointing to the start of a file supposed to contain a tar archive.
+ * @param tar_fd A file descriptor pointing to the start of a file supposed to contain a tar archive.
  *
  * @return a zero or positive value if the archive is valid, representing the number of non-null headers in the archive,
  *         -1 if the archive contains a header with an invalid magic value,
  *         -2 if the archive contains a header with an invalid version value,
  *         -3 if the archive contains a header with an invalid checksum value
  */
-int check_archive(int tar_tar_fd) {
+int check_archive(int tar_fd) {
     int nb_headers = 0;
     int nb_block = 0;
     //int x = 1;
-    //int start = tar_tar_fd;
+    //int start = tar_fd;
     
     //tar_header_t header;
-    //pread(tar_tar_fd, &header, sizeof(tar_header_t), nb_block*sizeof(tar_header_t));
+    //pread(tar_fd, &header, sizeof(tar_header_t), nb_block*sizeof(tar_header_t));
 
     while (1) //while(1)
     {
         //use of pread because you can offset the copy
         tar_header_t header;
-        pread(tar_tar_fd, &header, sizeof(tar_header_t), nb_block*sizeof(tar_header_t));
+        pread(tar_fd, &header, sizeof(tar_header_t), nb_block*sizeof(tar_header_t));
                 
         if (!strcmp(header.name, "\0")){
             return nb_headers;
@@ -87,20 +88,20 @@ int check_archive(int tar_tar_fd) {
 /**
  * Checks whether an entry exists in the archive.
  *
- * @param tar_tar_fd A file descriptor pointing to the start of a valid tar archive file.
+ * @param tar_fd A file descriptor pointing to the start of a valid tar archive file.
  * @param path A path to an entry in the archive.
  *
  * @return zero if no entry at the given path exists in the archive,
  *         any other value otherwise.
  */
-int exists(int tar_tar_fd, char *path) {
+int exists(int tar_fd, char *path) {
     int nb_block = 0;
-    //lseek(tar_tar_fd,0,SEEK_SET);
+    //lseek(tar_fd,0,SEEK_SET);
     //char header_test[BLOCKSIZE];
     while (1)
     {
         tar_header_t header;
-        pread(tar_tar_fd, &header, sizeof(tar_header_t), nb_block*sizeof(tar_header_t));
+        pread(tar_fd, &header, sizeof(tar_header_t), nb_block*sizeof(tar_header_t));
                 
         if (!strcmp(header.name, "\0")){ //check if it is the last header in the archive, EOF
             return 0;
@@ -124,22 +125,22 @@ int exists(int tar_tar_fd, char *path) {
 /**
  * Checks whether an entry exists in the archive and is a directory.
  *
- * @param tar_tar_fd A file descriptor pointing to the start of a valid tar archive file.
+ * @param tar_fd A file descriptor pointing to the start of a valid tar archive file.
  * @param path A path to an entry in the archive.
  *
  * @return zero if no entry at the given path exists in the archive or the entry is not a directory,
  *         any other value otherwise.
  */
-int is_dir(int tar_tar_fd, char *path) {
+int is_dir(int tar_fd, char *path) {
     int nb_block = 0;
-    //if (exists(tar_tar_fd,path) == 0)
+    //if (exists(tar_fd,path) == 0)
     //{
     //    return 0;
     //}
     while (1)
     {
         tar_header_t header;
-        pread(tar_tar_fd, &header, sizeof(tar_header_t), nb_block*sizeof(tar_header_t));
+        pread(tar_fd, &header, sizeof(tar_header_t), nb_block*sizeof(tar_header_t));
                 
         if (!strcmp(header.name, "\0")){
             return 0; //is not dir or entry does not exist, EOF
@@ -168,18 +169,18 @@ int is_dir(int tar_tar_fd, char *path) {
 /**
  * Checks whether an entry exists in the archive and is a file.
  *
- * @param tar_tar_fd A file descriptor pointing to the start of a valid tar archive file.
+ * @param tar_fd A file descriptor pointing to the start of a valid tar archive file.
  * @param path A path to an entry in the archive.
  *
  * @return zero if no entry at the given path exists in the archive or the entry is not a file,
  *         any other value otherwise.
  */
-int is_file(int tar_tar_fd, char *path) {
+int is_file(int tar_fd, char *path) {
     int nb_block = 0;
     while (1)
     {
         tar_header_t header;
-        pread(tar_tar_fd, &header, sizeof(tar_header_t), nb_block*sizeof(tar_header_t));
+        pread(tar_fd, &header, sizeof(tar_header_t), nb_block*sizeof(tar_header_t));
                 
         if (!strcmp(header.name, "\0")){
             return 0;
@@ -206,21 +207,21 @@ int is_file(int tar_tar_fd, char *path) {
 /**
  * Checks whether an entry exists in the archive and is a symlink.
  *
- * @param tar_tar_fd A file descriptor pointing to the start of a valid tar archive file.
+ * @param tar_fd A file descriptor pointing to the start of a valid tar archive file.
  * @param path A path to an entry in the archive.
  * @return zero if no entry at the given path exists in the archive or the entry is not symlink,
  *         any other value otherwise.
  */
-int is_symlink(int tar_tar_fd, char *path) {
+int is_symlink(int tar_fd, char *path) {
     int nb_block = 0;
-    if (exists(tar_tar_fd,path) == 0)
+    if (exists(tar_fd,path) == 0)
     {
         return 0;
     }
     while (1)
     {
         tar_header_t header;
-        pread(tar_tar_fd, &header, sizeof(tar_header_t), nb_block*sizeof(tar_header_t));
+        pread(tar_fd, &header, sizeof(tar_header_t), nb_block*sizeof(tar_header_t));
                 
         if (!strcmp(header.name, "\0")){
             return 0;
@@ -304,7 +305,7 @@ int list(int tar_fd, char *path, char **entries, size_t *no_entries) {
 /**
  * Reads a file at a given path in the archive.
  *
- * @param tar_tar_fd A file descriptor pointing to the start of a valid tar archive file.
+ * @param tar_fd A file descriptor pointing to the start of a valid tar archive file.
  * @param path A path to an entry in the archive to read from.  If the entry is a symlink, it must be resolved to its linked-to entry.
  * @param offset An offset in the file from which to start reading from, zero indicates the start of the file.
  * @param dest A destination buffer to read the given file into.
