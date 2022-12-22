@@ -1,4 +1,4 @@
-CFLAGS=-g -Wall -Werror
+CFLAGS=-g -Wall 
 
 all: tests lib_tar.o
 

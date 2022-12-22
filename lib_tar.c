@@ -39,7 +39,7 @@ int check_archive(int tar_fd) {
             return nb_headers;
         }
 
-        printf("Name: %d\n", (header.name[100]));
+        printf("Name: %s\n", header.name);
         //printf("checksum: %ld\n", TAR_INT(header.chksum));
         //printf("Version: %d\n", strcmp(header.version,(char *) TVERSION));
 
@@ -245,7 +245,35 @@ int is_symlink(int tar_fd, char *path) {
     return 0;
 }
 
+int diff_slash(char *path, char *name){
+    int pathe  = 0;
+    int namee = 0;
+    int diff = 0;
 
+    for (int i = 0; i < strlen(path); i++)
+    {
+        if (path[i] == 47){
+            pathe += 1;
+        }
+    }
+
+    for (int j = 0; j < strlen(name); j++)
+    {
+        if (name[j] == 47){
+            namee += 1;
+        }
+    }
+
+    diff = namee - pathe;
+    if (diff == 1){
+        return 1;
+    }else
+    {
+        return 0;
+    }
+    
+    
+}
 /**
  * Lists the entries at a given path in the archive.
  * list() does not recurse into the directories listed at the given path.
@@ -270,6 +298,7 @@ int is_symlink(int tar_fd, char *path) {
  */
 int list(int tar_fd, char *path, char **entries, size_t *no_entries) {
     int nb_block = 0;
+    int i = 0;
 
     while(1){
         
@@ -277,6 +306,7 @@ int list(int tar_fd, char *path, char **entries, size_t *no_entries) {
         pread(tar_fd, &header, sizeof(tar_header_t), nb_block*sizeof(tar_header_t));// navigate through headers
         
         if (!strcmp(header.name, "\0")){ //test if we are at the end of the archive
+            printf("EOF\n");
             return 0;
         }
         
@@ -286,8 +316,20 @@ int list(int tar_fd, char *path, char **entries, size_t *no_entries) {
             }
             //if not symlink do somthing
         }
-        //if path is in header name then we have a entry, what about recusive folders? 
-        //  int diff = strlen(path)-strlen(header.name)
+        if (strstr(header.name, path) != NULL){//if path is in header name then we have a entry, what about recusive folders? 
+            //  int diff = strlen(path)-strlen(header.name), 
+            int diff = strlen(path)-strlen(header.name);
+            if (diff > 0){
+                if (diff_slash(path, header.name)) { 
+                    entries[i] = header.name;
+                    i++;
+                    if (i == *no_entries){
+                        *no_entries = i;
+                        return 1;
+                    }
+                }
+            }
+        }
         //  if diff > 0
         //      if only one "/" in header.name[diff : ] then it is a file or folder but no recursive folder
 
@@ -299,7 +341,14 @@ int list(int tar_fd, char *path, char **entries, size_t *no_entries) {
         }
                 
     }
-    return 0;
+    *no_entries = i;
+    if (*no_entries == 0)
+    {
+        printf("no_entry = 0\n");
+        return 0;
+    }
+    
+    return 1;
 }
 
 /**

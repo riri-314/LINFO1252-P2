@@ -58,14 +58,13 @@ int main(int argc, char **argv) {
     size_t len  = 50;
     int ret6 = read_file(fd,"folder1/file1.txt",0,buffer, &len); 
     printf("Read_file returned %d\n", ret6);
-    printf("%s\n", (char *) buffer);
+    //printf("%s\n", (char *) buffer);
 
-    int someInt = 115;
-    char str[12];
-    sprintf(str, "%d", someInt);
-    printf("str: %s\n", str);
-    
+    char** entries = malloc(10*sizeof(char*)); //10 is too big but just to be sure
+    size_t no_entries = 3;
 
+    int ret7 = list(fd, "folder1/", entries, &no_entries);
+    printf("list returned: %d\n", ret7);
 
 
     
