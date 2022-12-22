@@ -39,7 +39,7 @@ int check_archive(int tar_fd) {
             return nb_headers;
         }
 
-        printf("Name: %s\n", header.name);
+        printf("Name: %d\n", (header.name[100]));
         //printf("checksum: %ld\n", TAR_INT(header.chksum));
         //printf("Version: %d\n", strcmp(header.version,(char *) TVERSION));
 
@@ -280,9 +280,17 @@ int list(int tar_fd, char *path, char **entries, size_t *no_entries) {
             return 0;
         }
         
-        if (strcmp(header.name, path) == 0){
-            //code here
+        if (strcmp(header.name, path) == 0){ //we test if we found the path
+            if ((header.typeflag == LNKTYPE || header.typeflag == SYMTYPE)) {
+                return list(tar_fd, header.linkname, entries, no_entries); //if symlink, run list with the correct file path
+            }
+            //if not symlink do somthing
         }
+        //if path is in header name then we have a entry, what about recusive folders? 
+        //  int diff = strlen(path)-strlen(header.name)
+        //  if diff > 0
+        //      if only one "/" in header.name[diff : ] then it is a file or folder but no recursive folder
+
 
         if (TAR_INT(header.size)%BLOCKSIZE == 0){ //if all blocks are full then offset by the number of 512 byte wich make the file
             nb_block += (1 + TAR_INT(header.size)/BLOCKSIZE);
@@ -340,23 +348,23 @@ ssize_t read_file(int tar_fd, char *path, size_t offset, uint8_t *dest, size_t *
                 return -2;
             }
             byte_2_read = TAR_INT(header.size) - offset;
-            printf("byte_2_read: %d\n", byte_2_read);
-            printf("len before: %ld\n", *len);
+            //printf("byte_2_read: %d\n", byte_2_read);
+            //printf("len before: %ld\n", *len);
             //printf("tar header size: %ld\n", TAR_INT(header.size));
             //printf("tar header name: %s\n", header.name);
+            
             // byte_2_read is bigger than len, return byte_2_read-len
             // byte_2read is smaller or equal to len, return 0
             if (byte_2_read > *len)
             {
-                //read to buffer
-                
+                //read to buffer     
                 pread(tar_fd, dest, *len, offset + ((nb_block+1)*sizeof(tar_header_t))); 
                 return byte_2_read - *len;
             }else if (byte_2_read <= *len)
             {
                 //read to buffer
                 *len = (size_t) byte_2_read; //in out argument, DAMN IT
-                printf("len after: %ld\n", *len);
+                //printf("len after: %ld\n", *len);
                 pread(tar_fd, dest, *len, offset + ((nb_block+1)*sizeof(tar_header_t))); 
                 return 0;
             }            

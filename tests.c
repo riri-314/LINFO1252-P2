@@ -36,8 +36,8 @@ int main(int argc, char **argv) {
         return -1;
     }
 
-    //int ret0 = check_archive(fd); // should worki
-    //printf("check_archive returned %d\n", ret0);
+    int ret0 = check_archive(fd); // should worki
+    printf("check_archive returned %d\n", ret0);
 //
     //int ret1 = exists(fd,"folder1/file1.txt"); // should worki
     //printf("exists returned %d\n", ret1);
@@ -59,6 +59,11 @@ int main(int argc, char **argv) {
     int ret6 = read_file(fd,"folder1/file1.txt",0,buffer, &len); 
     printf("Read_file returned %d\n", ret6);
     printf("%s\n", (char *) buffer);
+
+    int someInt = 115;
+    char str[12];
+    sprintf(str, "%d", someInt);
+    printf("str: %s\n", str);
     
 
 
