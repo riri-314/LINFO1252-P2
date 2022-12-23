@@ -262,17 +262,21 @@ int diff_slash(char *path, char *name){
         if (name[j] == 47){
             namee += 1;
         }
+        if ((namee == pathe+1) && (strlen(name) > j+1)){
+            //printf("file protection\n");
+            return 0;
+        }
     }
-
+    //printf("Number slash name: %d, path: %d\n", namee, pathe);
     diff = namee - pathe;
-    if (diff == 1){
+    if (diff == 1 || diff == 0){
         return 1;
     }else
     {
         return 0;
     }
     
-    
+    return 0;
 }
 /**
  * Lists the entries at a given path in the archive.
@@ -299,6 +303,7 @@ int diff_slash(char *path, char *name){
 int list(int tar_fd, char *path, char **entries, size_t *no_entries) {
     int nb_block = 0;
     int i = 0;
+    char* p;
 
     while(1){
         
@@ -306,22 +311,32 @@ int list(int tar_fd, char *path, char **entries, size_t *no_entries) {
         pread(tar_fd, &header, sizeof(tar_header_t), nb_block*sizeof(tar_header_t));// navigate through headers
         
         if (!strcmp(header.name, "\0")){ //test if we are at the end of the archive
-            printf("EOF\n");
+            //printf("EOF\n");
             return 0;
         }
         
         if (strcmp(header.name, path) == 0){ //we test if we found the path
+            //printf("symlink name ?: %s\n", header.name);
             if ((header.typeflag == LNKTYPE || header.typeflag == SYMTYPE)) {
+                //printf("Defenetly a symlink: %s\n", header.name);
                 return list(tar_fd, header.linkname, entries, no_entries); //if symlink, run list with the correct file path
             }
             //if not symlink do somthing
         }
-        if (strstr(header.name, path) != NULL){//if path is in header name then we have a entry, what about recusive folders? 
-            //  int diff = strlen(path)-strlen(header.name), 
-            int diff = strlen(path)-strlen(header.name);
+        //printf("path: %s\n", path);
+        p = strstr(header.name, path);
+        //printf("p: %s\n", p);
+        if (p){//if path is in header name then we have a entry, what about recusive folders? 
+            //printf("Path is in name: %s\n", header.name);
+            int diff = strlen(header.name)-strlen(path);
+            //printf("diff: %d\n", diff);
             if (diff > 0){
+                //printf("diff > 0: %s\n", header.name);
                 if (diff_slash(path, header.name)) { 
+                    //printf("Pass number of slash: %s\n", header.name);
+                    //printf("i: %d\n", i);
                     entries[i] = header.name;
+                    //printf("entries: %s\n", entries[0]);
                     i++;
                     if (i == *no_entries){
                         *no_entries = i;
@@ -339,12 +354,13 @@ int list(int tar_fd, char *path, char **entries, size_t *no_entries) {
         }else{ //if the blocks are not full
             nb_block += (2 + TAR_INT(header.size)/BLOCKSIZE); 
         }
+        //printf("\n");
                 
     }
     *no_entries = i;
     if (*no_entries == 0)
     {
-        printf("no_entry = 0\n");
+        //printf("no_entry = 0\n");
         return 0;
     }
     

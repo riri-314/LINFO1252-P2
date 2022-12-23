@@ -63,8 +63,15 @@ int main(int argc, char **argv) {
     char** entries = malloc(10*sizeof(char*)); //10 is too big but just to be sure
     size_t no_entries = 3;
 
+    printf("\n");
     int ret7 = list(fd, "folder1/", entries, &no_entries);
+    printf("\n");
     printf("list returned: %d\n", ret7);
+    //
+    //for (int i = 0; i < 10; i++) {
+    //    //printf("i: %d\n", i);
+    //    printf("entrie: %s \n", entries[i]);
+    //}
 
 
     
