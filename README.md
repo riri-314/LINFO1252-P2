@@ -29,11 +29,11 @@ TODO:
 ### Is_list
 TODO:
 - [ ] solve bug
-- [ ] test it
+- [x] test it
 
 ### Read_file
 - [x] solve bug
-- [ ] making it work on inginious, f**k them i'm ban
+- [x] making it work on inginious, f**k them i'm ban
 ## Autors
 Made by Henri Pihet and Xavier Sanchez-Rivas as part of the computer system course given by professor Etienne Riviere at EPL, UCLouvain
 
