@@ -38,40 +38,45 @@ int main(int argc, char **argv) {
 
     int ret0 = check_archive(fd); // should worki
     printf("check_archive returned %d\n", ret0);
-//
-    //int ret1 = exists(fd,"folder1/file1.txt"); // should worki
-    //printf("exists returned %d\n", ret1);
-//
-    //int ret2 = is_dir(fd,"folder1/folder3/"); // should worki
-    //printf("Directory returned %d\n", ret2); 
-    //
-    //int ret3 = is_file(fd,"folder1/file1.txt"); // should worki
-    //printf("File returned %d\n", ret3);
-//
-    //int ret4 = is_file(fd, "folder1/"); // should not work
-    //printf("File returned %d\n", ret4);
-//
-    //int ret5 = is_symlink(fd, "symlink"); //should work lol
-    //printf("Symlink returned %d\n", ret5);
-//
+
+    int ret1 = exists(fd,"folder1/file1.txt"); // should worki
+    printf("exists returned %d\n", ret1);
+
+    int ret2 = is_dir(fd,"folder1/folder3/"); // should worki
+    printf("Directory returned %d\n", ret2); 
+    
+    int ret3 = is_file(fd,"folder1/file1.txt"); // should worki
+    printf("File returned %d\n", ret3);
+
+    int ret4 = is_file(fd, "folder1/"); // should not work
+    printf("File returned %d\n", ret4);
+
+    int ret5 = is_symlink(fd, "symlink"); //should work lol
+    printf("Symlink returned %d\n", ret5);
+
     uint8_t buffer[100];
     size_t len  = 50;
     int ret6 = read_file(fd,"folder1/file1.txt",0,buffer, &len); 
     printf("Read_file returned %d\n", ret6);
     //printf("%s\n", (char *) buffer);
-
-    char** entries = malloc(10*sizeof(char*)); //10 is too big but just to be sure
+    
+    size_t lenn = 100;
+    char *entries[lenn];
+    for (int i = 0; i < 100; i++){
+        entries[i] = malloc(100);
+    }
+    
     size_t no_entries = 3;
 
-    printf("\n");
+    //printf("\n");
     int ret7 = list(fd, "folder1/", entries, &no_entries);
-    printf("\n");
+    //printf("\n");
     printf("list returned: %d\n", ret7);
-    //
-    //for (int i = 0; i < 10; i++) {
-    //    //printf("i: %d\n", i);
-    //    printf("entrie: %s \n", entries[i]);
-    //}
+    
+    for (int i = 0; i < 10; i++) {
+        //printf("i: %d\n", i);
+        printf("entrie: %s \n", entries[i]);
+    }
 
 
     

@@ -39,7 +39,7 @@ int check_archive(int tar_fd) {
             return nb_headers;
         }
 
-        printf("Name: %s\n", header.name);
+        //printf("Name: %s\n", header.name);
         //printf("checksum: %ld\n", TAR_INT(header.chksum));
         //printf("Version: %d\n", strcmp(header.version,(char *) TVERSION));
 
@@ -335,7 +335,9 @@ int list(int tar_fd, char *path, char **entries, size_t *no_entries) {
                 if (diff_slash(path, header.name)) { 
                     //printf("Pass number of slash: %s\n", header.name);
                     //printf("i: %d\n", i);
-                    entries[i] = header.name;
+                    memcpy(entries[i], header.name, strlen(header.name));
+                    //entries[i] = header.name;
+                    //printf("test\n");
                     //printf("entries: %s\n", entries[0]);
                     i++;
                     if (i == *no_entries){
